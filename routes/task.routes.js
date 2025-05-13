@@ -1,18 +1,25 @@
 const express = require('express');
 const router = express.Router();
 const Task = require('../models/task.model');
-const { taskCreate, taskUpdate } = require('../validators/task.schemas');
+const { createTaskSchema, taskUpdate } = require('../validators/task.schemas');
+const auth = require('../middlewares/auth');
+
+router.use(auth);
 
 
 // Create a task
 router.post('/', async (req, res) => {
   try {
-    const { title, description, tags } = req.body;
-    const task = new Task({ title, description, tags });
+    const parsed = createTaskSchema.parse(req.body); // validate here
+
+    const task = new Task({ ...parsed, userId: req.user.id });
     const savedTask = await task.save();
     res.status(201).json(savedTask);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    if (err.name === 'ZodError') {
+      return res.status(400).json({ error: err.errors });
+    }
+    res.status(500).json({ error: err.message });
   }
 });
 

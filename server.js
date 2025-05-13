@@ -11,6 +11,9 @@ app.get('/', (req, res) => {
   res.send('QuickTasks API is running.');
 });
 
+const authRoutes = require('./routes/auth.routes');
+app.use('/auth', authRoutes);
+
 const taskRoutes = require('./routes/task.routes');
 app.use('/tasks', taskRoutes);
 
